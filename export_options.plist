@@ -4,8 +4,6 @@
 <dict>
     <key>method</key>
     <string>development</string>
-    <key>teamID</key>
-    <string>7E2Z9A8GGF</string>
     <key>uploadBitcode</key>
     <false/>
     <key>uploadSymbols</key>
@@ -14,12 +12,5 @@
     <false/>
     <key>signingStyle</key>
     <string>automatic</string>
-    <key>signingCertificate</key>
-    <string>iPhone Developer</string>
-    <key>provisioningProfiles</key>
-    <dict>
-        <key>ch.taxley.smartpayroll</key>
-        <string></string>
-    </dict>
 </dict>
 </plist> 
