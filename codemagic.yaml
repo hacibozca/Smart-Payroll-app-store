@@ -13,12 +13,13 @@ workflows:
     scripts:
       - name: Build and Archive iOS app
         script: |
-          # Build archive with development team
+          # Build archive with automatic provisioning updates
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -destination 'generic/platform=iOS' \
             -archivePath "build/Smart_payroll.xcarchive" \
+            -allowProvisioningUpdates \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="zürich financial solutions GmbH" \
             CODE_SIGN_IDENTITY="Apple Development"
