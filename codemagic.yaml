@@ -8,21 +8,20 @@ workflows:
         XCODE_PROJECT: "Smart_payroll.xcodeproj"
         XCODE_SCHEME: "Smart payroll"
         BUNDLE_ID: "ch.taxley.smartpayroll"
+        DEVELOPMENT_TEAM: "zürich financial solutions GmbH"
       xcode: latest
     scripts:
       - name: Build and Archive iOS app
         script: |
-          # Set automatic code signing in project
-          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' "$XCODE_PROJECT/project.pbxproj"
-          
-          # Build archive with automatic signing
+          # Build archive with development team
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -destination 'generic/platform=iOS' \
             -archivePath "build/Smart_payroll.xcarchive" \
             CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=""
+            DEVELOPMENT_TEAM="zürich financial solutions GmbH" \
+            CODE_SIGN_IDENTITY="Apple Development"
           
           # Export IPA
           xcodebuild -exportArchive \
