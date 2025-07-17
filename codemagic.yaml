@@ -10,16 +10,29 @@ workflows:
         BUNDLE_ID: "ch.taxley.smartpayroll"
       xcode: latest
     scripts:
-      - name: Build iOS app
+      - name: Build and Archive iOS app
         script: |
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --export-options-plist "export_options.plist"
+          # Set automatic code signing in project
+          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' "$XCODE_PROJECT/project.pbxproj"
+          
+          # Build archive with automatic signing
+          xcodebuild archive \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -destination 'generic/platform=iOS' \
+            -archivePath "build/Smart_payroll.xcarchive" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM=""
+          
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath "build/Smart_payroll.xcarchive" \
+            -exportPath "build/ios/ipa" \
+            -exportOptionsPlist "export_options.plist"
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/Smart_payroll.xcarchive
       - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
     publishing:
       email:
         recipients:
