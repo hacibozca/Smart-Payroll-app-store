@@ -1,0 +1,31 @@
+workflows:
+  ios-workflow:
+    name: Smart Payroll iOS
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: ch.taxley.smartpayroll
+      vars:
+        XCODE_PROJECT: "Smart_payroll.xcodeproj"
+        XCODE_SCHEME: "Smart payroll"
+      xcode: latest
+    scripts:
+      - name: Set up provisioning profiles
+        script: xcode-project use-profiles
+      - name: Build iOS app
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - hacibozca@gmail.com
+        notify:
+          success: true
+          failure: true 
