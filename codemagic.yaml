@@ -3,22 +3,111 @@ workflows:
     name: Smart Payroll iOS
     max_build_duration: 120
     instance_type: mac_mini_m1
+    integrations:
+      app_store_connect: codemagic
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: ch.taxley.smartpayroll
       vars:
         XCODE_PROJECT: "Smart_payroll.xcodeproj"
         XCODE_SCHEME: "Smart payroll"
         BUNDLE_ID: "ch.taxley.smartpayroll"
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
+        CERTIFICATE_PRIVATE_KEY: $CERTIFICATE_PRIVATE_KEY
+        APP_STORE_CONNECT_EMAIL: "info@zufiso.ch"
+        APPLE_DEVELOPER_TEAM_ID: "7E2Z9A8GGF"
       xcode: latest
+      cocoapods: default
     scripts:
-      - name: Build iOS app
+      - name: Set up debug keychain to be used for code signing using Codemagic CLI 'keychain' command
+        script: |
+          keychain initialize
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files $BUNDLE_ID \
+            --type IOS_APP_STORE \
+            --create
+      - name: Use system default keychain
+        script: |
+          keychain add-certificates
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Get CocoaPods dependencies
+        script: |
+          # Keine CocoaPods Dependencies für WebView-App
+          echo "No CocoaPods dependencies required for WebView app"
+      - name: Build ipa for distribution
         script: |
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --export-method "app-store"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      email:
+        recipients:
+          - hacibozca@gmail.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        
+        # Submit to App Store Connect TestFlight
+        submit_to_testflight: true
+        beta_groups:
+          - "Internal Testing"
+        
+        # Submit to App Store (set to false for manual review)
+        submit_to_app_store: false
+
+  # Development Workflow für schnelle Tests
+  ios-development:
+    name: Smart Payroll iOS Development
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: ch.taxley.smartpayroll
+      vars:
+        XCODE_PROJECT: "Smart_payroll.xcodeproj"
+        XCODE_SCHEME: "Smart payroll"
+        BUNDLE_ID: "ch.taxley.smartpayroll"
+        APPLE_DEVELOPER_TEAM_ID: "7E2Z9A8GGF"
+      xcode: latest
+    scripts:
+      - name: Set up debug keychain
+        script: |
+          keychain initialize
+      - name: Fetch signing files for development
+        script: |
+          app-store-connect fetch-signing-files $BUNDLE_ID \
+            --type IOS_APP_DEVELOPMENT \
+            --create
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+      - name: Build for development
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --export-method "development"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
     publishing:
       email:
         recipients:
