@@ -9,8 +9,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: ch.taxley.smartpayroll
-        preferred_certificates:
-          - "Apple Distribution: ZUFISO GmbH (7E2Z9A8GGF)"
       vars:
         XCODE_PROJECT: "Smart_payroll.xcodeproj"
         XCODE_SCHEME: "Smart payroll"
